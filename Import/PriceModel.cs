@@ -1,0 +1,10 @@
+﻿using ProductImporterTool.Models;
+
+namespace ProductImporterTool.Import
+{
+    public class PriceModel : ModelBase
+    {
+        public string Code { get; set; }
+        public string DefaultPrice { get; set; }
+    }
+}

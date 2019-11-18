@@ -1,4 +1,4 @@
-﻿namespace ProductImporterTool.Models
+﻿namespace ProductImporterTool.Import
 {
     public class StockQuantity
     {

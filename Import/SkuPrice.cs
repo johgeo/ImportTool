@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ProductImporterTool.Models
+namespace ProductImporterTool.Import
 {
     public class SkuPrice
     {
