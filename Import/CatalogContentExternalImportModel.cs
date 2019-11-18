@@ -1,6 +1,8 @@
-﻿namespace ProductImporterTool.Models
+﻿using ProductImporterTool.Models;
+
+namespace ProductImporterTool.Import
 {
-    public class CatalogContentExternalImportModel
+    public class CatalogContentExternalImportModel : ModelBase
     {
         public string Code { get; set; }
         public string Name { get; set; }
@@ -12,9 +14,6 @@
         public string Measurement1 { get; set; }
         public string Measurement2 { get; set; }
         public string Measurement3 { get; set; }
-        public string DefaultPrice { get; set; }
-        public int DefaultStock { get; set; }
-        // fields not used by import tool but exist on epi model
         public int Discontinued { get; set; }
         public string GrossWeight { get; set; }
         public string NetWeight { get; set; }
