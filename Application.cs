@@ -5,12 +5,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using ProductImporterTool.Models;
-using Newtonsoft.Json;
 using ProductImporterTool.Extensions;
+using ProductImporterTool.Helpers;
 using ProductImporterTool.Import;
 using ProductImporterTool.ModelMapper;
 using ProductImporterTool.Validation;
@@ -31,7 +29,7 @@ namespace ProductImporterTool
         private static string _filePath = string.Empty;
         private static char _lineSplitter = ',';
 
-        private static readonly HttpClient Client = new HttpClient();
+        
 
         public Application(IEnumerable<IValidationRule<M3ExcelDataModel>> m3ValidationRules)
         {
@@ -248,7 +246,7 @@ namespace ProductImporterTool
             {
                 Console.WriteLine($"- Importing batch {batchIndex}");
 
-                var response = await ExecuteRequest(CreateProductImportContent(batch));
+                var response = await HttpHelper.ExecuteRequest(HttpHelper.CreateProductImportHttpContent(batch), _url, _endpoint);
                 if (response.StatusCode == HttpStatusCode.NoContent)
                     Console.WriteLine($"   Batch {batchIndex} complete --");
 
@@ -289,7 +287,7 @@ namespace ProductImporterTool
             {
                 Console.WriteLine($"- Importing batch {batchIndex}");
 
-                var response = await ExecuteRequest(CreatePriceImportContent(batch));
+                var response = await HttpHelper.ExecuteRequest(HttpHelper.CreatePriceImportHttpContent(batch), _url, _endpoint);
                 if (response.StatusCode == HttpStatusCode.NoContent)
                     Console.WriteLine($"   Batch {batchIndex} complete --");
 
@@ -316,7 +314,7 @@ namespace ProductImporterTool
             {
                 Console.WriteLine($"- Importing batch {batchIndex}");
 
-                var response = await ExecuteRequest(CreateStockImportContent(batch));
+                var response = await HttpHelper.ExecuteRequest(HttpHelper.CreateStockImportHttpContent(batch), _url, _endpoint);
                 if (response.StatusCode == HttpStatusCode.NoContent)
                     Console.WriteLine($"   Batch {batchIndex} complete --");
 
@@ -454,49 +452,6 @@ namespace ProductImporterTool
         }
 
         #endregion
-
-        #region Http Request Methods
-
-        private static HttpContent CreateProductImportContent(IEnumerable<CatalogContentExternalImportModel> batch)
-        {
-            const string mediaType = "application/json";
-            HttpContent content = new StringContent(JsonConvert.SerializeObject(batch));
-            content.Headers.ContentType = new MediaTypeWithQualityHeaderValue(mediaType);
-            return content;
-        }
-
-        private static HttpContent CreatePriceImportContent(IEnumerable<SkuPrice> batch)
-        {
-            const string mediaType = "application/json";
-            HttpContent content = new StringContent(JsonConvert.SerializeObject(batch));
-            content.Headers.ContentType = new MediaTypeWithQualityHeaderValue(mediaType);
-            return content;
-        }
-
-        private static HttpContent CreateStockImportContent(IEnumerable<StockQuantity> batch)
-        {
-            const string mediaType = "application/json";
-            HttpContent content = new StringContent(JsonConvert.SerializeObject(batch));
-            content.Headers.ContentType = new MediaTypeWithQualityHeaderValue(mediaType);
-            return content;
-        }
-
-        private static void SetupHeaders()
-        {
-            const string mediaType = "application/json";
-            Client.DefaultRequestHeaders.Accept.Clear();
-            Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(ConfigurationManager.AppSettings["api-key"]);
-            Client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(mediaType));
-        }
-
-        private static async Task<HttpResponseMessage> ExecuteRequest(HttpContent content)
-        {
-            SetupHeaders();
-            return await Client.PostAsync(_url + _endpoint, content);
-        }
-
-        #endregion
-
         #region Enums
 
         private enum Mode
