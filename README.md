@@ -9,27 +9,22 @@ Feel free to add/change stuff to the solution if you see room for improvments
 
   
 
-Make sure to setup the neccessary confugrations in appSettings before ypu run the program
+Make sure to insert the neccessary values in App.Debug.config before ypu run the program
 
-  
+
 
 ```xml
 
-<add  key="dev-url"  value=""  />
-
-<add  key="integration-url"  value=""  />
-
-<add  key="peprod-url"  value=""  />
-
-<add  key="prod-url"  value=""  />
-
-<add  key="product-api-endpoint"  value=""  />
-
-<add  key="price-api-endpoint"  value=""  />
-
-<add  key="stock-api-endpoint"  value=""  />
-
-<add  key="api-key"  value=""  />
+<appSettings>
+    <add key="dev-url" value="" xdt:Transform="Replace" xdt:Locator="Match(key)"/>
+    <add key="integration-url" value="" xdt:Transform="Replace" xdt:Locator="Match(key)" />
+    <add key="peprod-url" value="" xdt:Transform="Replace" xdt:Locator="Match(key)"/>
+    <add key="prod-url" value="" xdt:Transform="Replace" xdt:Locator="Match(key)"/>
+    <add key="product-api-endpoint" value="" xdt:Transform="Replace" xdt:Locator="Match(key)"/>
+    <add key="price-api-endpoint" value="t" xdt:Transform="Replace" xdt:Locator="Match(key)"/>
+    <add key="stock-api-endpoint" value="" xdt:Transform="Replace" xdt:Locator="Match(key)" />
+    <add key="api-key" value="" xdt:Transform="Replace" xdt:Locator="Match(key)"/>
+  </appSettings>
 
 ```
 
