@@ -60,6 +60,7 @@
   <ItemGroup>
     <Compile Include="Application.cs" />
     <Compile Include="Extensions\EnumerableExtensions.cs" />
+    <Compile Include="ModelMapper\Mapper.cs" />
     <Compile Include="Validation\EnrichValidation\EnrichmentExcelDataModel.cs" />
     <Compile Include="Validation\EnrichValidation\Rules\Rules.cs" />
     <Compile Include="Validation\M3Validation\M3ExcelDataModel.cs" />

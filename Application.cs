@@ -12,6 +12,7 @@ using ProductImporterTool.Models;
 using Newtonsoft.Json;
 using ProductImporterTool.Extensions;
 using ProductImporterTool.Import;
+using ProductImporterTool.ModelMapper;
 using ProductImporterTool.Validation;
 using ProductImporterTool.Validation.EnrichValidation;
 using ProductImporterTool.Validation.M3Validation;
@@ -433,51 +434,13 @@ namespace ProductImporterTool
             switch (_mode)
             {
                 case Mode.Product:
-                    return new CatalogContentExternalImportModel
-                    {
-                        Code = splitLine[0],
-                        Name = splitLine[2],
-                        ProductPart = splitLine[11],
-                        Firmness = splitLine[3],
-                        ColorCode = splitLine[10],
-                        ColorName = splitLine[9],
-                        Measurement1 = ParseToMillimeter(splitLine[5]),
-                        Measurement2 = ParseToMillimeter(splitLine[6]),
-                        Measurement3 = ParseToMillimeter(splitLine[7]),
-                        Model = splitLine[12]
-                    };
+                    return Mapper.Map<CatalogContentExternalImportModel>(splitLine);
                 case Mode.Price:
-                    return new PriceModel
-                    {
-                        Code = splitLine[0],
-                        DefaultPrice = splitLine[1]
-                    };
+                    return Mapper.Map<PriceModel>(splitLine);
                 case Mode.Stock:
-                    return new StockModel
-                    {
-                        Code = splitLine[0],
-                        DefaultStock = 0
-                    };
+                    return Mapper.Map<StockModel>(splitLine);
                 case Mode.ValidateData:
-                    return new M3ExcelDataModel
-                    {
-                        SkuNumber = splitLine[0],
-                        EanCode = splitLine[1],
-                        Firmness = splitLine[3],
-                        UnitOfMeasure = splitLine[4],
-                        NetWeight = splitLine[5],
-                        GrossWeight = splitLine[6],
-                        Volume = splitLine[7],
-                        Measurement2 = splitLine[8],
-                        Measurement1 = splitLine[9],
-                        Measurement3 = splitLine[10],
-                        ColorCode = splitLine[12],
-                        ColorName = splitLine[13],
-                        ProductPart = splitLine[14],
-                        ECommercePlatform = splitLine[15],
-                        StockPolicy = splitLine[16],
-                        Model = splitLine[17]
-                    };
+                    return Mapper.Map<M3ExcelDataModel>(splitLine);
             }
 
             return default;
