@@ -452,24 +452,5 @@ namespace ProductImporterTool
         }
 
         #endregion
-        #region Enums
-
-        private enum Mode
-        {
-            Product,
-            Price,
-            Stock,
-            ValidateData
-        }
-
-        private enum Environment
-        {
-            Development,
-            Integration,
-            Preproduction,
-            Production
-        }
-
-        #endregion
     }
 }

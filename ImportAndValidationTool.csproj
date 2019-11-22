@@ -59,6 +59,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Application.cs" />
+    <Compile Include="Enums\Environment.cs" />
+    <Compile Include="Enums\Mode.cs" />
+    <Compile Include="Enums\Validate.cs" />
     <Compile Include="Extensions\EnumerableExtensions.cs" />
     <Compile Include="ModelMapper\Mapper.cs" />
     <Compile Include="Validation\EnrichValidation\EnrichmentExcelDataModel.cs" />
