@@ -6,7 +6,10 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using OfficeOpenXml;
+using OfficeOpenXml.Style;
 using ProductImporterTool.Models;
+using ProductImporterTool.Enums;
 using ProductImporterTool.Extensions;
 using ProductImporterTool.Helpers;
 using ProductImporterTool.Import;
@@ -14,15 +17,18 @@ using ProductImporterTool.ModelMapper;
 using ProductImporterTool.Validation;
 using ProductImporterTool.Validation.EnrichValidation;
 using ProductImporterTool.Validation.M3Validation;
+using Environment = ProductImporterTool.Enums.Environment;
 
 namespace ProductImporterTool
 {
     public class Application
     {
+        private readonly List<IValidationRule<EnrichmentExcelDataModel>> _enrichmentValidationRules;
         private readonly List<IValidationRule<M3ExcelDataModel>> _m3ValidationRules;
 
         private static Environment _env;
         private static Mode _mode;
+        private static Validate _validate;
 
         private static string _url = string.Empty;
         private static string _endpoint = string.Empty;
@@ -31,8 +37,10 @@ namespace ProductImporterTool
 
         
 
-        public Application(IEnumerable<IValidationRule<M3ExcelDataModel>> m3ValidationRules)
+        public Application(IEnumerable<IValidationRule<M3ExcelDataModel>> m3ValidationRules, 
+            IEnumerable<IValidationRule<EnrichmentExcelDataModel>> enrichmentValidationRules)
         {
+            _enrichmentValidationRules = enrichmentValidationRules.ToList();
             _m3ValidationRules = m3ValidationRules.ToList();
         }
 
@@ -61,7 +69,12 @@ namespace ProductImporterTool
                         else if (_mode.Equals(Mode.Stock))
                             await ImportStock(models.Cast<StockModel>().ToList());
                         else if (_mode.Equals(Mode.ValidateData))
-                            ValidateM3ExcelData(models.Cast<M3ExcelDataModel>());
+                        {
+                            if(_validate.Equals(Validate.M3Data))
+                                ValidateData<M3ExcelDataModel>(models.Cast<M3ExcelDataModel>());
+                            else if (_validate.Equals(Validate.EnrichmentData))
+                                ValidateData<EnrichmentExcelDataModel>(models.Cast<EnrichmentExcelDataModel>());
+                        }
                     }).GetAwaiter().GetResult();
                 }
                 catch (Exception e)
@@ -103,16 +116,29 @@ namespace ProductImporterTool
 
         private static bool IsValidateMode()
         {
+            const string exceptionMessage = "enter a valid number, dummy";
             Console.WriteLine("\n Choose work mode: \n 1. Import data\n 2. Validate data");
             Console.Write("number: ");
             var envChoice = Console.ReadLine();
             if (string.IsNullOrWhiteSpace(envChoice))
-                throw new ArgumentException("enter a valid number, dummy");
+                throw new ArgumentException(exceptionMessage);
             if (envChoice.Equals("1"))
                 return false;
             if (envChoice.Equals("2"))
+            {
+                Console.WriteLine("\n Choose which type of data to validate \n 1. M3 Data \n 2. Enrichment Data");
+                Console.Write("number: ");
+                var validationChoice = Console.ReadLine();
+                if (string.IsNullOrWhiteSpace(validationChoice))
+                    throw new ArgumentException(exceptionMessage);
+                if (validationChoice.Equals("1"))
+                    _validate = Validate.M3Data;
+                if (validationChoice.Equals("2"))
+                    _validate = Validate.EnrichmentData;
                 return true;
-            throw new ArgumentException("enter a valid number, dummy");
+            }
+                
+            throw new ArgumentException(exceptionMessage);
         }
 
         private static void SetupEnvironment()
@@ -328,57 +354,116 @@ namespace ProductImporterTool
 
         #region Validator Methods
 
-        private void ValidateM3ExcelData(IEnumerable<M3ExcelDataModel> models)
+        private void ValidateData<TValidationModel>(IEnumerable<ValidateDataModelBase> models) where TValidationModel : ValidateDataModelBase
         {
+            var fileTitle = string.Empty;
             var errorList = new List<ValidationError>();
             var counter = 2;
             foreach (var model in models)
             {
-                foreach (var m3ValidationRule in _m3ValidationRules)
+                if (typeof(TValidationModel) == typeof(M3ExcelDataModel))
                 {
-                    var isValidRule = m3ValidationRule.Validate(model);
-                    if(!isValidRule)
-                        errorList.Add(new ValidationError()
-                        {
-                            SkuCode = model.SkuNumber,
-                            RowNumber = counter,
-                            RuleName = m3ValidationRule.GetRuleName()
-                        });
+                    fileTitle = "M3 field validation";
+                    foreach (var m3ValidationRule in _m3ValidationRules)
+                    {
+                        var m3Model = (M3ExcelDataModel) model;
+                        var isValidRule = m3ValidationRule.Validate(m3Model, out var message);
+                        if (!isValidRule)
+                            errorList.Add(new ValidationError()
+                            {
+                                RowNumber = counter,
+                                SkuCode = m3Model.SkuNumber,
+                                RuleName = m3ValidationRule.GetRuleName(),
+                                Message = message
+                            });
+                    }
+                } else if (typeof(TValidationModel) == typeof(EnrichmentExcelDataModel))
+                {
+                    fileTitle = "Enrichment field validation";
+                    foreach (var enrichmentValidationRule in _enrichmentValidationRules)
+                    {
+                        var enrichmentModel = (EnrichmentExcelDataModel) model;
+                        var isValidRule = enrichmentValidationRule.Validate(enrichmentModel, out var message);
+                        if (!isValidRule)
+                            errorList.Add(new ValidationError()
+                            {
+                                RowNumber = counter,
+                                SkuCode = enrichmentModel.VariantCode,
+                                RuleName = enrichmentValidationRule.GetRuleName(),
+                                Message = message
+                            });
+                    }
                 }
 
                 counter++;
             }
 
-            SaveToTxt(errorList, "M3 field validation");
+            SaveToExcel(errorList, fileTitle);
         }
 
-        //TODO: Implement validation for Enrichment excel
-        private void ValidateEnrichmentData(IEnumerable<EnrichmentExcelDataModel> models)
+        private static ExcelPackage CreateExcel(IList<ValidationError> errorList, string workSheetTitle)
         {
-            return;
+            ExcelPackage excel = null;
+
+            try
+            {
+                excel = new ExcelPackage();
+                var ws = excel.Workbook.Worksheets.Add(workSheetTitle);
+                foreach (var prop in new ValidationError().GetType().GetProperties())
+                {
+                    var cell = ws.Cells[1, (ws.Dimension?.Columns ?? 0) + 1];
+                    cell.Value = prop.Name;
+                    cell.Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
+                    cell.Style.Font.Bold = true;
+                }
+
+                for (var i = 0; i < errorList.Count; i++)
+                {
+                    var row = i + 2;
+                    var props = errorList[i].GetType().GetProperties();
+                    for (var j = 0; j < props.Length; j++)
+                    {
+                        var column = j + 1;
+                        var cell = ws.Cells[row, column];
+                        cell.Value = props[j].GetValue(errorList[i]);
+                        cell.Style.Border.Bottom.Style = ExcelBorderStyle.None;
+                        cell.Style.Font.Bold = false;
+                    }
+                }
+
+                ws.Cells.AutoFitColumns(0);
+                for (var i = 1; i <= ws.Dimension.Columns; i++)
+                    ws.Column(i).Width += 2;
+
+                excel.Save();
+                excel.Stream.Position = 0;
+            }
+            catch (Exception)
+            {
+                excel?.Dispose();
+                throw;
+            }
+
+            return excel;
         }
 
-        private static void SaveToTxt(List<ValidationError> errorList, string title)
+        private void SaveToExcel(IList<ValidationError> errorList, string title)
+        {
+            var folderPath = CreateFolderPath(".xlsx");
+            using (var excel = CreateExcel(errorList, title))
+            using (var fs = new FileStream(folderPath, FileMode.Create, FileAccess.Write))
+                excel.Stream.CopyTo(fs);
+            Console.WriteLine($"Found {errorList.Count} validation errors");
+            Console.WriteLine($"Saved validation errors to file {folderPath}");
+        }
+
+        private static string CreateFolderPath(string fileEnding)
         {
             var pathSeparated = _filePath.Split('\\');
             var pathRemoved = pathSeparated.Take(pathSeparated.Length - 1).ToList();
-            pathRemoved.Add("validation_errors.txt");
+            pathRemoved.Add($"validation_errors{fileEnding}");
             var folderPath = string.Join("\\", pathRemoved.ToArray());
-            if (errorList.Any())
-            {
-                using (TextWriter tw = new StreamWriter(folderPath))
-                {
-                    tw.WriteLine(title);
-                    foreach (var error in errorList)
-                        tw.WriteLine($"Sku:{error.SkuCode}, Row:{error.RowNumber} failed on rule: {error.RuleName}");
-                    Console.WriteLine($"Found {errorList.Count} validation errors");
-                    Console.WriteLine($"Saved validation errors to file {folderPath}");
-                }
-            }
-            else
-            {
-                Console.WriteLine("No validation errors found");
-            }
+            return folderPath;
         }
 
         #endregion
@@ -438,12 +523,15 @@ namespace ProductImporterTool
                 case Mode.Stock:
                     return Mapper.Map<StockModel>(splitLine);
                 case Mode.ValidateData:
-                    return Mapper.Map<M3ExcelDataModel>(splitLine);
+                    return _validate.Equals(Validate.M3Data)
+                        ? Mapper.Map<M3ExcelDataModel>(splitLine)
+                        : Mapper.Map<EnrichmentExcelDataModel>(splitLine);
             }
 
             return default;
         }
 
+        [Obsolete("We really should not need to parse data to millimeter as it should already be in that format")]
         private static string ParseToMillimeter(string value)
         {
             if (int.TryParse(value, out var intResult))
