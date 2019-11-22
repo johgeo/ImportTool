@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using ProductImporterTool.Import;
 using ProductImporterTool.Models;
+using ProductImporterTool.Validation.EnrichValidation;
 using ProductImporterTool.Validation.M3Validation;
 
 namespace ProductImporterTool.ModelMapper
@@ -56,8 +57,32 @@ namespace ProductImporterTool.ModelMapper
                     StockPolicy = splitLine[16],
                     Model = splitLine[17]
                 };
+            if(typeof(T) == typeof(EnrichmentExcelDataModel))
+                return new EnrichmentExcelDataModel
+                {
+                    Brand = splitLine[0],
+                    Categories = splitLine[1],
+                    Beds = splitLine[2],
+                    VariantCode = splitLine[3],
+                    VariantBrand = splitLine[4],
+                    DescriptionSv = splitLine[5],
+                    DescriptionEn = splitLine[6],
+                    LongDescriptionSv = splitLine[7],
+                    LongDescriptionEn = splitLine[8],
+                    Size = splitLine[9],
+                    Sellable = splitLine[10],
+                    PurchasePriceSek = splitLine[11],
+                    PurchasePriceUsd = splitLine[12],
+                    ProductGroup = splitLine[13],
+                    Sorting = splitLine[14],
+                    Label = splitLine[15],
+                    IsBulkSku = splitLine[16],  
+                    SellableAndPartOfConfiguratedBed = splitLine[17],
+                    ProductNameSv = splitLine[18],
+                    ProductNameEn = splitLine[19]
+                };
 
-            throw new ArgumentNullException("Could not map type parameter to a model");
+            throw new ArgumentException("Could not map type parameter to a model");
         }
     }
 }

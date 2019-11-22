@@ -9,7 +9,7 @@ Feel free to add/change stuff to the solution if you see room for improvments
 
   
 
-Make sure to insert the neccessary values in App.Debug.config before ypu run the program
+Make sure to insert the neccessary values in App.Debug.config before you run the program
 
 
 
@@ -44,17 +44,18 @@ Create a descriptive rule that inherits from ValidationRuleBase and pass in the 
 ```csharp
   public class ColorCodeMissing : ValidationRuleBase<M3ExcelDataModel>
         {
-            public override bool Validate(M3ExcelDataModel model)
+            public override bool Validate(M3ExcelDataModel model, out string message)
             {
+                message = "Color code field has been left empty";
                 if (string.IsNullOrWhiteSpace(model.ColorCode))
                     return false;
                 else return true;
             }
         }
 ```
-Make sure do add the rule to the correpsonding registry.
+Make sure to add the rule to the corresponding registry.
 ```csharp
 For<IValidationRule<M3ExcelDataModel>>().Add<Rules.ColorCodeMissing>();
 ```
 - Run the tool and choose validate
--  If errors are found the tool will produce a file with all error in the excel with the corresponding sku number, row and rule that it failed on. 
+-  If errors are found the tool will produce an excel with all error in the excel with the corresponding sku number, row and rule that it failed on with a message describing why it failed. 
