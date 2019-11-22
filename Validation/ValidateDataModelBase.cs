@@ -2,7 +2,7 @@
 
 namespace ProductImporterTool.Validation
 {
-    public class ValidateDataModelBase : ModelBase
+    public abstract class ValidateDataModelBase : ModelBase
     {
     }
 }
