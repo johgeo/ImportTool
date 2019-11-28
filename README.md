@@ -1,5 +1,5 @@
 
-# ImportTool
+# Import And Validation Tool
 
 Tool that can fake in products, price, and stock on all environments
 
@@ -44,7 +44,7 @@ Create a descriptive rule that inherits from ValidationRuleBase and pass in the 
 ```csharp
   public class ColorCodeMissing : ValidationRuleBase<M3ExcelDataModel>
         {
-            public override bool Validate(M3ExcelDataModel model, out string message)
+            public override bool Valid(M3ExcelDataModel model, out string message)
             {
                 message = "Color code field has been left empty";
                 if (string.IsNullOrWhiteSpace(model.ColorCode))
@@ -57,5 +57,56 @@ Make sure to add the rule to the corresponding registry.
 ```csharp
 For<IValidationRule<M3ExcelDataModel>>().Add<Rules.ColorCodeMissing>();
 ```
+Make sure to add the rule to the corresponding registry.
+```csharp
+For<IValidationRule<M3ExcelDataModel>>().Add<Rules.ColorCodeMissing>();
+```
+
+### Validate globally
+
+If you wish to validate on something else than what is available on a row level for instance if a sku exists more than once in the excel you could define a global rule. The principal is the same as above but you will want to create a rule and derive from GlobalValidationRuleBase. This time we want to check this in the enrichment excel so we will pass in EnrichmentExcelDataModel as a type argument when we inherint the base class.
+```csharp
+   public class IsSkuNumberUnique : GlobalValidationRuleBase<EnrichmentExcelDataModel>
+        {
+            public override bool Valid(IEnumerable<EnrichmentExcelDataModel> models, out IList<ValidationError> errors)
+            {
+                models = models.ToList();
+                errors = new List<ValidationError>();
+
+                var recurringAndNumOfOccurence = models
+                    .GroupBy(x => x.VariantCode)
+                    .Where(g => g.Count() > 1)
+                    .ToDictionary(x => x.Key, y => y.Count());
+
+                var rowCount = 1;
+                foreach (var model in models)
+                {
+                    if (recurringAndNumOfOccurence.ContainsKey(model.VariantCode))
+                    {
+                        recurringAndNumOfOccurence.TryGetValue(model.VariantCode, out var recurringCount);
+                        var error = new ValidationError()
+                        {
+                            RowNumber = rowCount,
+                            SkuCode = model.VariantCode,
+                            RuleName = base.GetRuleName(),
+                            Message = $"Variant code has been identified {recurringCount} times"
+                        };
+
+                        errors.Add(error);
+                    }
+
+                    rowCount++;
+                }
+
+                return !errors.Any();
+            }
+        }
+```
+
+Make sure to add the rule to the registry.
+```csharp
+For<IGlobalValidationRule<EnrichmentExcelDataModel>>().Add<EnrichmentRules.IsSkuNumberUnique>();
+```
+
 - Run the tool and choose validate
 -  If errors are found the tool will produce an excel with all error in the excel with the corresponding sku number, row and rule that it failed on with a message describing why it failed. 
