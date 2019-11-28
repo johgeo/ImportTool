@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
@@ -53,9 +54,7 @@ namespace ProductImporterTool
             {
                 StartSetup();
 
-                var linesFromCsv = GetLinesFromCsv(_filePath);
-                var models = CreateModels(linesFromCsv);
-
+                var models = CreateModels(GetLinesFromExcel(_filePath));
                 var stopWatch = new Stopwatch();
                 stopWatch.Start();
 
@@ -94,13 +93,16 @@ namespace ProductImporterTool
         private static void StartSetup()
         {
             if (IsValidateMode())
+            {
                 _mode = Mode.ValidateData;
+                _lineSplitter = '|';
+            }
             else
             {
                 SetupEnvironment();
                 SetupImportMode();
+                SetupSplitDelimiter();
             }
-            SetupSplitDelimiter();
             SetupPaths();
         }
 
@@ -118,7 +120,7 @@ namespace ProductImporterTool
         private static bool IsValidateMode()
         {
             const string exceptionMessage = "enter a valid number, dummy";
-            Console.WriteLine("\n Choose work mode: \n 1. Import data\n 2. Validate data");
+            Console.WriteLine("\n Choose work mode: \n 1. Import data\n 2. Valid data");
             Console.Write("number: ");
             var envChoice = Console.ReadLine();
             if (string.IsNullOrWhiteSpace(envChoice))
@@ -495,23 +497,29 @@ namespace ProductImporterTool
 
         #region Helper Methods
 
-        private static List<string> GetLinesFromCsv(string pathToImportFile)
+        private static List<string> GetLinesFromExcel(string pathToFile)
         {
-            var allLines = new List<string>();
-
-            using (var reader = new StreamReader(pathToImportFile))
+            using (var streamReader = new StreamReader(pathToFile))
+            using (var excel = new ExcelPackage(streamReader.BaseStream))
             {
-                while (!reader.EndOfStream)
+                var firstWorkSheet = excel.Workbook.Worksheets.First();
+                var lastColumnCount = firstWorkSheet.Dimension.Columns;
+                var allLines = new List<string>();
+                for (var row = 2; row < firstWorkSheet.Dimension.Rows; row++)
                 {
-                    var line = reader.ReadLine();
-                    if (line == null) continue;
-
-                    allLines.Add(line);
+                    var sb = new StringBuilder();
+                    for (var column = 1; column < firstWorkSheet.Dimension.Columns; column++)
+                    {
+                        var value = firstWorkSheet.GetValue(row, column);
+                        if (column != lastColumnCount)
+                            sb.Append(value).Append("|");
+                    }
+                    allLines.Add(sb.ToString());
                 }
-            }
 
-            Console.WriteLine($"{allLines.Count} lines have been identified.");
-            return allLines;
+                Console.WriteLine($"{allLines.Count} lines have been identified.");
+                return allLines;
+            }
         }
 
         public static List<ModelBase> CreateModels(List<string> csvLines)
