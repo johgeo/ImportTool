@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ProductImporterTool.Validation
+namespace ImportAndValidationTool.Validation
 {
     public abstract class GlobalValidationRuleBase<TValidationModel> : IGlobalValidationRule<TValidationModel> where TValidationModel : ValidateDataModelBase
     {

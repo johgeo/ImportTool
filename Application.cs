@@ -7,20 +7,20 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using ImportAndValidationTool.Enums;
+using ImportAndValidationTool.Extensions;
+using ImportAndValidationTool.Helpers;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
-using ProductImporterTool.Models;
-using ProductImporterTool.Enums;
-using ProductImporterTool.Extensions;
-using ProductImporterTool.Helpers;
-using ProductImporterTool.Import;
-using ProductImporterTool.ModelMapper;
-using ProductImporterTool.Validation;
-using ProductImporterTool.Validation.EnrichValidation;
-using ProductImporterTool.Validation.M3Validation;
-using Environment = ProductImporterTool.Enums.Environment;
+using ImportAndValidationTool.Import;
+using ImportAndValidationTool.ModelMapper;
+using ImportAndValidationTool.Models;
+using ImportAndValidationTool.Validation;
+using ImportAndValidationTool.Validation.EnrichValidation;
+using ImportAndValidationTool.Validation.M3Validation;
+using Environment = ImportAndValidationTool.Enums.Environment;
 
-namespace ProductImporterTool
+namespace ImportAndValidationTool
 {
     public class Application
     {

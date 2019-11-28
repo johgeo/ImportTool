@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{46894F9B-E4E1-4607-831C-D0482486F853}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>ProductImporterTool</RootNamespace>
-    <AssemblyName>ProductImporterTool</AssemblyName>
+    <RootNamespace>ImportAndValidationTool</RootNamespace>
+    <AssemblyName>ImportAndValidationTool</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

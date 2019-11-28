@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using ProductImporterTool.Import;
-using ProductImporterTool.Models;
-using ProductImporterTool.Validation.EnrichValidation;
-using ProductImporterTool.Validation.M3Validation;
+using ImportAndValidationTool.Import;
+using ImportAndValidationTool.Models;
+using ImportAndValidationTool.Validation.EnrichValidation;
+using ImportAndValidationTool.Validation.M3Validation;
 
-namespace ProductImporterTool.ModelMapper
+namespace ImportAndValidationTool.ModelMapper
 {
     public static class Mapper
     {

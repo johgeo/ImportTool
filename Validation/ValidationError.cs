@@ -1,4 +1,4 @@
-﻿namespace ProductImporterTool.Validation
+﻿namespace ImportAndValidationTool.Validation
 {
     public class ValidationError
     {

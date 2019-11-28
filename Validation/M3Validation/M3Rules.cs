@@ -1,4 +1,4 @@
-﻿namespace ProductImporterTool.Validation.M3Validation
+﻿namespace ImportAndValidationTool.Validation.M3Validation
 {
     public class M3Rules
     {

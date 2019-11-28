@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace ProductImporterTool.Validation.EnrichValidation
+namespace ImportAndValidationTool.Validation.EnrichValidation
 {
     public class EnrichmentRules
     {

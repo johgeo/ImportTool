@@ -1,8 +1,8 @@
-﻿using ProductImporterTool.Validation;
-using ProductImporterTool.Validation.EnrichValidation;
-using ProductImporterTool.Validation.M3Validation;
+﻿using ImportAndValidationTool.Validation;
+using ImportAndValidationTool.Validation.EnrichValidation;
+using ImportAndValidationTool.Validation.M3Validation;
 
-namespace ProductImporterTool.Registry
+namespace ImportAndValidationTool.Registry
 {
     public class RulesRegistry : StructureMap.Registry
     {

@@ -1,8 +1,8 @@
 ﻿using System;
-using ProductImporterTool.Registry;
+using ImportAndValidationTool.Registry;
 using StructureMap;
 
-namespace ProductImporterTool
+namespace ImportAndValidationTool
 {
     public class Program
     {

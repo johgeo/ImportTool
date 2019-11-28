@@ -1,4 +1,4 @@
-﻿namespace ProductImporterTool.Validation
+﻿namespace ImportAndValidationTool.Validation
 {
     public abstract class ValidationRuleBase<TValidationModel> : IValidationRule<TValidationModel> where TValidationModel : ValidateDataModelBase
     {
