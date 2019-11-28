@@ -72,7 +72,10 @@
     <Compile Include="Helpers\HttpHelper.cs" />
     <Compile Include="ModelMapper\Mapper.cs" />
     <Compile Include="Validation\EnrichValidation\EnrichmentExcelDataModel.cs" />
-    <Compile Include="Validation\EnrichValidation\Rules\EnrichmentRules.cs" />
+    <Compile Include="Validation\EnrichValidation\EnrichmentRules.cs" />
+    <Compile Include="Validation\GlobalValidationRuleBase.cs" />
+    <Compile Include="Validation\IGlobalValidationRule.cs" />
+    <Compile Include="Validation\IRule.cs" />
     <Compile Include="Validation\M3Validation\M3ExcelDataModel.cs" />
     <Compile Include="Models\ModelBase.cs" />
     <Compile Include="Import\CatalogContentExternalImportModel.cs" />
@@ -80,7 +83,7 @@
     <Compile Include="Import\StockModel.cs" />
     <Compile Include="Import\SkuPrice.cs" />
     <Compile Include="Import\StockQuantity.cs" />
-    <Compile Include="Validation\M3Validation\Rules\M3Rules.cs" />
+    <Compile Include="Validation\M3Validation\M3Rules.cs" />
     <Compile Include="Validation\ValidateDataModelBase.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

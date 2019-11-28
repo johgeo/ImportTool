@@ -23,6 +23,7 @@ namespace ProductImporterTool
 {
     public class Application
     {
+        private readonly List<IGlobalValidationRule<EnrichmentExcelDataModel>> _globalEnrichmentValidationRules;
         private readonly List<IValidationRule<EnrichmentExcelDataModel>> _enrichmentValidationRules;
         private readonly List<IValidationRule<M3ExcelDataModel>> _m3ValidationRules;
 
@@ -35,11 +36,11 @@ namespace ProductImporterTool
         private static string _filePath = string.Empty;
         private static char _lineSplitter = ',';
 
-        
-
         public Application(IEnumerable<IValidationRule<M3ExcelDataModel>> m3ValidationRules, 
-            IEnumerable<IValidationRule<EnrichmentExcelDataModel>> enrichmentValidationRules)
+            IEnumerable<IValidationRule<EnrichmentExcelDataModel>> enrichmentValidationRules, 
+            IEnumerable<IGlobalValidationRule<EnrichmentExcelDataModel>> globalEnrichmentValidationRules)
         {
+            _globalEnrichmentValidationRules = globalEnrichmentValidationRules.ToList();
             _enrichmentValidationRules = enrichmentValidationRules.ToList();
             _m3ValidationRules = m3ValidationRules.ToList();
         }
@@ -356,6 +357,7 @@ namespace ProductImporterTool
 
         private void ValidateData<TValidationModel>(IEnumerable<ValidateDataModelBase> models) where TValidationModel : ValidateDataModelBase
         {
+            models = models.ToList();
             var fileTitle = string.Empty;
             var errorList = new List<ValidationError>();
             var counter = 2;
@@ -364,41 +366,64 @@ namespace ProductImporterTool
                 if (typeof(TValidationModel) == typeof(M3ExcelDataModel))
                 {
                     fileTitle = "M3 field validation";
-                    foreach (var m3ValidationRule in _m3ValidationRules)
-                    {
-                        var m3Model = (M3ExcelDataModel) model;
-                        var isValidRule = m3ValidationRule.Validate(m3Model, out var message);
-                        if (!isValidRule)
-                            errorList.Add(new ValidationError()
-                            {
-                                RowNumber = counter,
-                                SkuCode = m3Model.SkuNumber,
-                                RuleName = m3ValidationRule.GetRuleName(),
-                                Message = message
-                            });
-                    }
+                    ValidateM3Rows(model, errorList, counter);
                 } else if (typeof(TValidationModel) == typeof(EnrichmentExcelDataModel))
                 {
                     fileTitle = "Enrichment field validation";
-                    foreach (var enrichmentValidationRule in _enrichmentValidationRules)
-                    {
-                        var enrichmentModel = (EnrichmentExcelDataModel) model;
-                        var isValidRule = enrichmentValidationRule.Validate(enrichmentModel, out var message);
-                        if (!isValidRule)
-                            errorList.Add(new ValidationError()
-                            {
-                                RowNumber = counter,
-                                SkuCode = enrichmentModel.VariantCode,
-                                RuleName = enrichmentValidationRule.GetRuleName(),
-                                Message = message
-                            });
-                    }
+                    ValidateEnrichmentRows(model, errorList, counter);
+                    ValidateEnrichmentGlobally(models, errorList);
                 }
 
                 counter++;
             }
 
             SaveToExcel(errorList, fileTitle);
+        }
+
+        private void ValidateEnrichmentGlobally(IEnumerable<ValidateDataModelBase> models, List<ValidationError> errorList)
+        {
+            models = models.ToList();
+            foreach (var globalEnrichmentValidationRule in _globalEnrichmentValidationRules)
+            {
+                var enrichmentModels = models.Cast<EnrichmentExcelDataModel>();
+                var isValidRule = globalEnrichmentValidationRule.Valid(enrichmentModels, out var errors);
+                if (!isValidRule)
+                    errorList.AddRange(errors);
+            }
+        }
+
+        private void ValidateEnrichmentRows(ValidateDataModelBase model, ICollection<ValidationError> errorList, int counter)
+        {
+            foreach (var enrichmentValidationRule in _enrichmentValidationRules)
+            {
+                var enrichmentModel = (EnrichmentExcelDataModel) model;
+                var isValidRule = enrichmentValidationRule.Valid(enrichmentModel, out var message);
+                if (!isValidRule)
+                    errorList.Add(new ValidationError()
+                    {
+                        RowNumber = counter,
+                        SkuCode = enrichmentModel.VariantCode,
+                        RuleName = enrichmentValidationRule.GetRuleName(),
+                        Message = message
+                    });
+            }
+        }
+
+        private void ValidateM3Rows(ValidateDataModelBase model, ICollection<ValidationError> errorList, int counter)
+        {
+            foreach (var m3ValidationRule in _m3ValidationRules)
+            {
+                var m3Model = (M3ExcelDataModel) model;
+                var isValidRule = m3ValidationRule.Valid(m3Model, out var message);
+                if (!isValidRule)
+                    errorList.Add(new ValidationError()
+                    {
+                        RowNumber = counter,
+                        SkuCode = m3Model.SkuNumber,
+                        RuleName = m3ValidationRule.GetRuleName(),
+                        Message = message
+                    });
+            }
         }
 
         private static ExcelPackage CreateExcel(IList<ValidationError> errorList, string workSheetTitle)

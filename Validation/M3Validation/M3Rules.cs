@@ -1,12 +1,10 @@
-﻿using System.Net.Http;
-
-namespace ProductImporterTool.Validation.M3Validation.Rules
+﻿namespace ProductImporterTool.Validation.M3Validation
 {
     public class M3Rules
     {
         public class SkuNumberMissing : ValidationRuleBase<M3ExcelDataModel>
         {
-            public override bool Validate(M3ExcelDataModel model, out string message)
+            public override bool Valid(M3ExcelDataModel model, out string message)
             {
                 message = "Sku number is critical and cannot be missing";
                 if (string.IsNullOrWhiteSpace(model.SkuNumber))
@@ -17,7 +15,7 @@ namespace ProductImporterTool.Validation.M3Validation.Rules
 
         public class EanCodeMissing : ValidationRuleBase<M3ExcelDataModel>
         {
-            public override bool Validate(M3ExcelDataModel model, out string message)
+            public override bool Valid(M3ExcelDataModel model, out string message)
             {
                 message = "Ean code field has been left empty";
                 if (string.IsNullOrWhiteSpace(model.EanCode))
@@ -28,7 +26,7 @@ namespace ProductImporterTool.Validation.M3Validation.Rules
 
         public class UnitOfMeasureMissing : ValidationRuleBase<M3ExcelDataModel>
         {
-            public override bool Validate(M3ExcelDataModel model, out string message)
+            public override bool Valid(M3ExcelDataModel model, out string message)
             {
                 message = "Unit of measure field has been left empty";
                 if (string.IsNullOrWhiteSpace(model.UnitOfMeasure))
@@ -39,7 +37,7 @@ namespace ProductImporterTool.Validation.M3Validation.Rules
 
         public class ColorCodeMissing : ValidationRuleBase<M3ExcelDataModel>
         {
-            public override bool Validate(M3ExcelDataModel model, out string message)
+            public override bool Valid(M3ExcelDataModel model, out string message)
             {
                 message = "Color code field has been left empty";
                 if (string.IsNullOrWhiteSpace(model.ColorCode))
@@ -50,7 +48,7 @@ namespace ProductImporterTool.Validation.M3Validation.Rules
 
         public class ColorNameMissing : ValidationRuleBase<M3ExcelDataModel>
         {
-            public override bool Validate(M3ExcelDataModel model, out string message)
+            public override bool Valid(M3ExcelDataModel model, out string message)
             {
                 message = "Color name field has been left empty";
                 if (string.IsNullOrWhiteSpace(model.ColorName))
@@ -61,7 +59,7 @@ namespace ProductImporterTool.Validation.M3Validation.Rules
 
         public class ModelIsMissing : ValidationRuleBase<M3ExcelDataModel>
         {
-            public override bool Validate(M3ExcelDataModel model, out string message)
+            public override bool Valid(M3ExcelDataModel model, out string message)
             {
                 message = "Model field has been left empty";
                 if (string.IsNullOrWhiteSpace(model.Model))
@@ -72,7 +70,7 @@ namespace ProductImporterTool.Validation.M3Validation.Rules
 
         public class ECommPlatformMissing : ValidationRuleBase<M3ExcelDataModel>
         {
-            public override bool Validate(M3ExcelDataModel model, out string message)
+            public override bool Valid(M3ExcelDataModel model, out string message)
             {
                 message = "Ecomm-platform field has been left empty, this will affect how we import products to CDB and Jensen";
                 if (string.IsNullOrWhiteSpace(model.ECommercePlatform))
@@ -83,7 +81,7 @@ namespace ProductImporterTool.Validation.M3Validation.Rules
 
         public class StockPolicyWrongDataOrMissing : ValidationRuleBase<M3ExcelDataModel>
         {
-            public override bool Validate(M3ExcelDataModel model, out string message)
+            public override bool Valid(M3ExcelDataModel model, out string message)
             {
                 message = "Stock policy field has been left empty or has wrong format, correct format is yes or no";
                 if (string.IsNullOrWhiteSpace(model.StockPolicy))
@@ -93,6 +91,5 @@ namespace ProductImporterTool.Validation.M3Validation.Rules
                 else return true;
             }
         }
-
     }
 }

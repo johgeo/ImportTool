@@ -1,8 +1,6 @@
 ﻿using ProductImporterTool.Validation;
 using ProductImporterTool.Validation.EnrichValidation;
 using ProductImporterTool.Validation.M3Validation;
-using ProductImporterTool.Validation.M3Validation.Rules;
-using ProductImporterTool.Validation.EnrichValidation.Rules;
 
 namespace ProductImporterTool.Registry
 {
@@ -26,6 +24,11 @@ namespace ProductImporterTool.Registry
             For<IValidationRule<M3ExcelDataModel>>().Add<M3Rules.StockPolicyWrongDataOrMissing>();
 
             For<IValidationRule<EnrichmentExcelDataModel>>().Add<EnrichmentRules.CategoryCodeFormatFaulty>();
+            For<IValidationRule<EnrichmentExcelDataModel>>().Add<EnrichmentRules.SellableStatusForBedSkuCorrect>();
+            For<IValidationRule<EnrichmentExcelDataModel>>().Add<EnrichmentRules.CategoryCorrectForBedSku>();
+
+            //Global rules
+            For<IGlobalValidationRule<EnrichmentExcelDataModel>>().Add<EnrichmentRules.IsSkuNumberUnique>();
         }
     }
 }
