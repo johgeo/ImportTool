@@ -42,20 +42,20 @@ namespace ProductImporterTool.ModelMapper
                 {
                     SkuNumber = splitLine[0],
                     EanCode = splitLine[1],
-                    Firmness = splitLine[3],
-                    UnitOfMeasure = splitLine[4],
-                    NetWeight = splitLine[5],
-                    GrossWeight = splitLine[6],
-                    Volume = splitLine[7],
-                    Measurement2 = splitLine[8],
-                    Measurement1 = splitLine[9],
-                    Measurement3 = splitLine[10],
-                    ColorCode = splitLine[12],
-                    ColorName = splitLine[13],
-                    ProductPart = splitLine[14],
-                    ECommercePlatform = splitLine[15],
-                    StockPolicy = splitLine[16],
-                    Model = splitLine[17]
+                    Firmness = splitLine[2],
+                    UnitOfMeasure = splitLine[3],
+                    NetWeight = splitLine[4],
+                    GrossWeight = splitLine[5],
+                    Volume = splitLine[6],
+                    Measurement2 = splitLine[7],
+                    Measurement1 = splitLine[8],
+                    Measurement3 = splitLine[9],
+                    ColorCode = splitLine[10],
+                    ColorName = splitLine[11],
+                    ProductPart = splitLine[12],
+                    ECommercePlatform = splitLine[13],
+                    StockPolicy = splitLine[14],
+                    Model = splitLine[15]
                 };
             if(typeof(T) == typeof(EnrichmentExcelDataModel))
                 return new EnrichmentExcelDataModel
