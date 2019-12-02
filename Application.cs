@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using ImportAndValidationTool.Enums;
@@ -366,20 +367,26 @@ namespace ImportAndValidationTool
             var fileTitle = string.Empty;
             var errorList = new List<ValidationError>();
             var counter = 2;
-            foreach (var model in models)
-            {
-                if (typeof(TValidationModel) == typeof(M3ExcelDataModel))
-                {
-                    fileTitle = "M3 field validation";
-                    ValidateM3Rows(model, errorList, counter);
-                } else if (typeof(TValidationModel) == typeof(EnrichmentExcelDataModel))
-                {
-                    fileTitle = "Enrichment field validation";
-                    ValidateEnrichmentRows(model, errorList, counter);
-                    ValidateEnrichmentGlobally(models, errorList);
-                }
 
-                counter++;
+            if (typeof(TValidationModel) == typeof(M3ExcelDataModel))
+            {
+                fileTitle = "M3 data validation";
+                foreach (var model in models)
+                {
+                    ValidateM3Rows(model, errorList, counter);
+                    counter++;
+                }
+                ValidateM3Globally(models, errorList);
+            }
+            else if (typeof(TValidationModel) == typeof(EnrichmentExcelDataModel))
+            {
+                fileTitle = "Enrichment data validation";
+                foreach (var model in models)
+                {
+                    ValidateEnrichmentRows(model, errorList, counter);
+                    counter++;
+                }
+                ValidateEnrichmentGlobally(models, errorList);
             }
 
             SaveToExcel(errorList, fileTitle);
@@ -408,6 +415,7 @@ namespace ImportAndValidationTool
                     errorList.AddRange(errors);
             }
         }
+
         private void ValidateEnrichmentRows(ValidateDataModelBase model, ICollection<ValidationError> errorList, int counter)
         {
             foreach (var enrichmentValidationRule in _enrichmentValidationRules)
