@@ -25,6 +25,7 @@ namespace ImportAndValidationTool
     public class Application
     {
         private readonly List<IGlobalValidationRule<EnrichmentExcelDataModel>> _globalEnrichmentValidationRules;
+        private readonly List<IGlobalValidationRule<M3ExcelDataModel>> _globalM3ValidationRules;
         private readonly List<IValidationRule<EnrichmentExcelDataModel>> _enrichmentValidationRules;
         private readonly List<IValidationRule<M3ExcelDataModel>> _m3ValidationRules;
 
@@ -39,9 +40,11 @@ namespace ImportAndValidationTool
 
         public Application(IEnumerable<IValidationRule<M3ExcelDataModel>> m3ValidationRules, 
             IEnumerable<IValidationRule<EnrichmentExcelDataModel>> enrichmentValidationRules, 
-            IEnumerable<IGlobalValidationRule<EnrichmentExcelDataModel>> globalEnrichmentValidationRules)
+            IEnumerable<IGlobalValidationRule<EnrichmentExcelDataModel>> globalEnrichmentValidationRules,
+            IEnumerable<IGlobalValidationRule<M3ExcelDataModel>> globalM3ValidationRules)
         {
             _globalEnrichmentValidationRules = globalEnrichmentValidationRules.ToList();
+            _globalM3ValidationRules = globalM3ValidationRules.ToList();
             _enrichmentValidationRules = enrichmentValidationRules.ToList();
             _m3ValidationRules = m3ValidationRules.ToList();
         }
@@ -394,6 +397,17 @@ namespace ImportAndValidationTool
             }
         }
 
+        private void ValidateM3Globally(IEnumerable<ValidateDataModelBase> models, List<ValidationError> errorList)
+        {
+            models = models.ToList();
+            foreach (var globalM3ValidationRule in _globalM3ValidationRules)
+            {
+                var m3Models = models.Cast<M3ExcelDataModel>();
+                var isValidRule = globalM3ValidationRule.Valid(m3Models, out var errors);
+                if (!isValidRule)
+                    errorList.AddRange(errors);
+            }
+        }
         private void ValidateEnrichmentRows(ValidateDataModelBase model, ICollection<ValidationError> errorList, int counter)
         {
             foreach (var enrichmentValidationRule in _enrichmentValidationRules)

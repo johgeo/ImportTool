@@ -60,24 +60,20 @@ namespace ImportAndValidationTool.Validation.EnrichValidation
                     .Where(g => g.Count() > 1)
                     .ToDictionary(x => x.Key, y => y.Count());
 
-                var rowCount = 1;
                 foreach (var model in models)
                 {
                     if (recurringAndNumOfOccurence.ContainsKey(model.VariantCode))
                     {
                         recurringAndNumOfOccurence.TryGetValue(model.VariantCode, out var recurringCount);
-                        var error = new ValidationError()
+                        var error = new GlobalError()
                         {
-                            RowNumber = rowCount,
                             SkuCode = model.VariantCode,
                             RuleName = base.GetRuleName(),
-                            Message = $"Variant code has been identified {recurringCount} times"
+                            Message = $"Sku with code {model.VariantCode} appears {recurringCount} times in the document."
                         };
 
                         errors.Add(error);
                     }
-
-                    rowCount++;
                 }
 
                 return !errors.Any();

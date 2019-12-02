@@ -29,6 +29,8 @@ namespace ImportAndValidationTool.Registry
 
             //Global rules
             For<IGlobalValidationRule<EnrichmentExcelDataModel>>().Add<EnrichmentRules.IsSkuNumberUnique>();
+
+            For<IGlobalValidationRule<M3ExcelDataModel>>().Add<M3Rules.IsSkuNumberUnique>();
         }
     }
 }

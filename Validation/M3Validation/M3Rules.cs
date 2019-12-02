@@ -1,4 +1,9 @@
-﻿namespace ImportAndValidationTool.Validation.M3Validation
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Net.Configuration;
+using OfficeOpenXml.ConditionalFormatting.Contracts;
+
+namespace ImportAndValidationTool.Validation.M3Validation
 {
     public class M3Rules
     {
@@ -86,9 +91,47 @@
                 message = "Stock policy field has been left empty or has wrong format, correct format is yes or no";
                 if (string.IsNullOrWhiteSpace(model.StockPolicy))
                     return false;
-                if (!model.StockPolicy.ToLower().Equals("false") || !model.StockPolicy.ToLower().Equals("yes"))
-                    return false;
+                if (model.StockPolicy.ToLower().Equals("no"))
+                    return true;
+                if (model.StockPolicy.ToLower().Equals("yes"))
+                    return true;
                 else return true;
+            }
+        }
+
+        //Globals
+        public class IsSkuNumberUnique : GlobalValidationRuleBase<M3ExcelDataModel>
+        {
+            public override bool Valid(IEnumerable<M3ExcelDataModel> models, out IList<ValidationError> errors)
+            {
+                models = models.ToList();
+                errors = new List<ValidationError>();
+
+                var recurringAndNumOfOccurence = models
+                    .GroupBy(x => x.SkuNumber)
+                    .Where(g => g.Count() > 1)
+                    .ToDictionary(x => x.Key, y => y.Count());
+
+                var rowCount = 1;
+                foreach (var model in models)
+                {
+                    if (recurringAndNumOfOccurence.ContainsKey(model.SkuNumber))
+                    {
+                        recurringAndNumOfOccurence.TryGetValue(model.SkuNumber, out var recurringCount);
+                        var error = new GlobalError()
+                        {
+                            SkuCode = model.SkuNumber,
+                            RuleName = base.GetRuleName(),
+                            Message = $"Sku number has been identified {recurringCount} times"
+                        };
+
+                        errors.Add(error);
+                    }
+
+                    rowCount++;
+                }
+
+                return !errors.Any();
             }
         }
     }
