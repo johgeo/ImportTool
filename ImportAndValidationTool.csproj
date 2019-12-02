@@ -71,6 +71,8 @@
     <Compile Include="Extensions\EnumerableExtensions.cs" />
     <Compile Include="Helpers\HttpHelper.cs" />
     <Compile Include="ModelMapper\Mapper.cs" />
+    <Compile Include="Validation\GlobalError.cs" />
+    <Compile Include="Validation\RowError.cs" />
     <Compile Include="Validation\EnrichValidation\EnrichmentExcelDataModel.cs" />
     <Compile Include="Validation\EnrichValidation\EnrichmentRules.cs" />
     <Compile Include="Validation\GlobalValidationRuleBase.cs" />
