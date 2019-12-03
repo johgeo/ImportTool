@@ -65,11 +65,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Application.cs" />
+    <Compile Include="Registry\DefaultRegistry.cs" />
     <Compile Include="Enums\Environment.cs" />
     <Compile Include="Enums\Mode.cs" />
     <Compile Include="Enums\Validate.cs" />
+    <Compile Include="Helpers\ExcelHelper.cs" />
     <Compile Include="Extensions\EnumerableExtensions.cs" />
     <Compile Include="Helpers\HttpHelper.cs" />
+    <Compile Include="Import\ImportService\IImportService.cs" />
+    <Compile Include="Registry\ImportRegistry.cs" />
+    <Compile Include="Import\ImportService\ImportService.cs" />
     <Compile Include="ModelMapper\Mapper.cs" />
     <Compile Include="Validation\GlobalError.cs" />
     <Compile Include="Validation\RowError.cs" />
@@ -91,6 +96,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Registry\RulesRegistry.cs" />
     <Compile Include="Validation\IValidationRule.cs" />
+    <Compile Include="Validation\ValidationService\IValidationService.cs" />
+    <Compile Include="Validation\ValidationService\ValidationRegistry.cs" />
+    <Compile Include="Validation\ValidationService\ValidationService.cs" />
     <Compile Include="Validation\ValidationError.cs" />
     <Compile Include="Validation\ValidationRuleBase.cs" />
   </ItemGroup>

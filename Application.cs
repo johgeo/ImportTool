@@ -2,52 +2,40 @@
 using System.Configuration;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Net;
-using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using ImportAndValidationTool.Enums;
-using ImportAndValidationTool.Extensions;
 using ImportAndValidationTool.Helpers;
-using OfficeOpenXml;
-using OfficeOpenXml.Style;
 using ImportAndValidationTool.Import;
+using ImportAndValidationTool.Import.ImportService;
 using ImportAndValidationTool.ModelMapper;
 using ImportAndValidationTool.Models;
 using ImportAndValidationTool.Validation;
 using ImportAndValidationTool.Validation.EnrichValidation;
 using ImportAndValidationTool.Validation.M3Validation;
+using ImportAndValidationTool.Validation.ValidationService;
 using Environment = ImportAndValidationTool.Enums.Environment;
 
 namespace ImportAndValidationTool
 {
     public class Application
     {
-        private readonly List<IGlobalValidationRule<EnrichmentExcelDataModel>> _globalEnrichmentValidationRules;
-        private readonly List<IGlobalValidationRule<M3ExcelDataModel>> _globalM3ValidationRules;
-        private readonly List<IValidationRule<EnrichmentExcelDataModel>> _enrichmentValidationRules;
-        private readonly List<IValidationRule<M3ExcelDataModel>> _m3ValidationRules;
-
+        private readonly IValidationService _validationService;
+        private readonly IImportService _importService;
         private static Environment _env;
         private static Mode _mode;
         private static Validate _validate;
 
-        private static string _url = string.Empty;
-        private static string _endpoint = string.Empty;
-        private static string _filePath = string.Empty;
-        private static char _lineSplitter = ',';
+        private static char _lineSplitter = '|';
 
-        public Application(IEnumerable<IValidationRule<M3ExcelDataModel>> m3ValidationRules, 
-            IEnumerable<IValidationRule<EnrichmentExcelDataModel>> enrichmentValidationRules, 
-            IEnumerable<IGlobalValidationRule<EnrichmentExcelDataModel>> globalEnrichmentValidationRules,
-            IEnumerable<IGlobalValidationRule<M3ExcelDataModel>> globalM3ValidationRules)
+        public static string FilePath = string.Empty;
+        public static string Url = string.Empty;
+        public static string Endpoint = string.Empty;
+
+        public Application(IValidationService validationService, IImportService importService)
         {
-            _globalEnrichmentValidationRules = globalEnrichmentValidationRules.ToList();
-            _globalM3ValidationRules = globalM3ValidationRules.ToList();
-            _enrichmentValidationRules = enrichmentValidationRules.ToList();
-            _m3ValidationRules = m3ValidationRules.ToList();
+            _validationService = validationService;
+            _importService = importService;
         }
 
         public void Run()
@@ -58,7 +46,7 @@ namespace ImportAndValidationTool
             {
                 StartSetup();
 
-                var models = CreateModels(GetLinesFromExcel(_filePath));
+                var models = CreateModels(ExcelHelper.GetLinesFromExcel(FilePath));
                 var stopWatch = new Stopwatch();
                 stopWatch.Start();
 
@@ -67,11 +55,11 @@ namespace ImportAndValidationTool
                     Task.Run(async () =>
                     {
                         if (_mode.Equals(Mode.Product))
-                            await ImportProducts(models.Cast<CatalogContentExternalImportModel>().ToList());
+                            await _importService.ImportProducts(models.Cast<CatalogContentExternalImportModel>().ToList());
                         else if (_mode.Equals(Mode.Price))
-                            await ImportPrices(models.Cast<PriceModel>().ToList());
+                            await _importService.ImportPrices(models.Cast<PriceModel>().ToList());
                         else if (_mode.Equals(Mode.Stock))
-                            await ImportStock(models.Cast<StockModel>().ToList());
+                            await _importService.ImportStock(models.Cast<StockModel>().ToList());
                         else if (_mode.Equals(Mode.ValidateData))
                         {
                             if(_validate.Equals(Validate.M3Data))
@@ -99,32 +87,21 @@ namespace ImportAndValidationTool
             if (IsValidateMode())
             {
                 _mode = Mode.ValidateData;
-                _lineSplitter = '|';
             }
             else
             {
                 SetupEnvironment();
                 SetupImportMode();
-                SetupSplitDelimiter();
             }
             SetupPaths();
         }
 
         #region Setup methods
 
-        private static void SetupSplitDelimiter()
-        {
-            Console.WriteLine("\n What is the split delimiter in the csv file?");
-            Console.Write("default is ',': ");
-            var delimiter = Console.ReadLine();
-            if (!string.IsNullOrWhiteSpace(delimiter))
-                _lineSplitter = delimiter.ToCharArray().ElementAtOrDefault(0);
-        }
-
         private static bool IsValidateMode()
         {
             const string exceptionMessage = "enter a valid number, dummy";
-            Console.WriteLine("\n Choose work mode: \n 1. Import data\n 2. Valid data");
+            Console.WriteLine("\n Choose work mode: \n 1. Import data\n 2. Validate data");
             Console.Write("number: ");
             var envChoice = Console.ReadLine();
             if (string.IsNullOrWhiteSpace(envChoice))
@@ -228,16 +205,16 @@ namespace ImportAndValidationTool
             switch (_env)
             {
                 case Environment.Development:
-                    _url = ConfigurationManager.AppSettings["dev-url"];
+                    Url = ConfigurationManager.AppSettings["dev-url"];
                     break;
                 case Environment.Integration:
-                    _url = ConfigurationManager.AppSettings["integration-url"];
+                    Url = ConfigurationManager.AppSettings["integration-url"];
                     break;
                 case Environment.Preproduction:
-                    _url = ConfigurationManager.AppSettings["peprod-url"];
+                    Url = ConfigurationManager.AppSettings["peprod-url"];
                     break;
                 case Environment.Production:
-                    _url = ConfigurationManager.AppSettings["prod-url"];
+                    Url = ConfigurationManager.AppSettings["prod-url"];
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -245,116 +222,24 @@ namespace ImportAndValidationTool
 
             Console.WriteLine("\n Path to file:");
             Console.Write("Path: ");
-            _filePath = Console.ReadLine();
+            FilePath = Console.ReadLine();
 
             switch (_mode)
             {
                 case Mode.Product:
-                    _endpoint = ConfigurationManager.AppSettings["product-api-endpoint"];
+                    Endpoint = ConfigurationManager.AppSettings["product-api-endpoint"];
                     break;
                 case Mode.Price:
-                    _endpoint = ConfigurationManager.AppSettings["price-api-endpoint"];
+                    Endpoint = ConfigurationManager.AppSettings["price-api-endpoint"];
                     break;
                 case Mode.Stock:
-                    _endpoint = ConfigurationManager.AppSettings["stock-api-endpoint"];
+                    Endpoint = ConfigurationManager.AppSettings["stock-api-endpoint"];
                     break;
                 case Mode.ValidateData:
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-        }
-
-        #endregion
-
-        #region Import Methods
-
-        public static async Task ImportProducts(List<CatalogContentExternalImportModel> productsToImport)
-        {
-            var batches = productsToImport.Batch(10).ToList();
-            var batchIndex = 1;
-            Console.WriteLine($"Total number of batches {batches.Count}");
-
-            foreach (var batch in batches)
-            {
-                Console.WriteLine($"- Importing batch {batchIndex}");
-
-                var response = await HttpHelper.ExecuteRequest(HttpHelper.CreateProductImportHttpContent(batch), _url, _endpoint);
-                if (response.StatusCode == HttpStatusCode.NoContent)
-                    Console.WriteLine($"   Batch {batchIndex} complete --");
-
-                batchIndex++;
-            }
-
-            Console.WriteLine("- All batches have been successfully imported");
-        }
-
-        public static async Task ImportPrices(List<PriceModel> priceModels)
-        {
-            var prices = new List<SkuPrice>();
-            foreach (var product in priceModels)
-            {
-                try
-                {
-                    Convert.ToDecimal(product.DefaultPrice);
-                }
-                catch
-                {
-                    continue;
-                }
-
-                prices.Add(new SkuPrice()
-                {
-                    CurrencyCode = "SEK",
-                    Market = "default",
-                    Price = Convert.ToDecimal(product.DefaultPrice),
-                    SkuNumber = product.Code
-                });
-            }
-
-            var batches = prices.Batch(10).ToList();
-            var batchIndex = 1;
-            Console.WriteLine($"Total number of batches {batches.Count}");
-
-            foreach (var batch in batches)
-            {
-                Console.WriteLine($"- Importing batch {batchIndex}");
-
-                var response = await HttpHelper.ExecuteRequest(HttpHelper.CreatePriceImportHttpContent(batch), _url, _endpoint);
-                if (response.StatusCode == HttpStatusCode.NoContent)
-                    Console.WriteLine($"   Batch {batchIndex} complete --");
-
-                batchIndex++;
-            }
-
-            Console.WriteLine("- All batches have been successfully imported");
-        }
-
-        public static async Task ImportStock(List<StockModel> stockModels)
-        {
-            var stockQuantities = stockModels.Select(p => new StockQuantity
-            {
-                SkuNumber = p.Code,
-                Quantity = p.DefaultStock,
-                Warehouse = "V30"
-            });
-
-            var batches = stockQuantities.Batch(10).ToList();
-            var batchIndex = 1;
-            Console.WriteLine($"Total number of batches {batches.Count}");
-
-            foreach (var batch in batches)
-            {
-                Console.WriteLine($"- Importing batch {batchIndex}");
-
-                var response = await HttpHelper.ExecuteRequest(HttpHelper.CreateStockImportHttpContent(batch), _url, _endpoint);
-                if (response.StatusCode == HttpStatusCode.NoContent)
-                    Console.WriteLine($"   Batch {batchIndex} complete --");
-
-                batchIndex++;
-            }
-
-            Console.WriteLine("- All batches have been successfully imported");
         }
 
         #endregion
@@ -373,237 +258,30 @@ namespace ImportAndValidationTool
                 fileTitle = "M3 data validation";
                 foreach (var model in models)
                 {
-                    ValidateM3Rows(model, errorList, counter);
+                    _validationService.ValidateM3Rows(model, errorList, counter);
                     counter++;
                 }
-                ValidateM3Globally(models, errorList);
+                _validationService.ValidateM3Globally(models, errorList);
             }
             else if (typeof(TValidationModel) == typeof(EnrichmentExcelDataModel))
             {
                 fileTitle = "Enrichment data validation";
                 foreach (var model in models)
                 {
-                    ValidateEnrichmentRows(model, errorList, counter);
+                    _validationService.ValidateEnrichmentRows(model, errorList, counter);
                     counter++;
                 }
-                ValidateEnrichmentGlobally(models, errorList);
+                _validationService.ValidateEnrichmentGlobally(models, errorList);
             }
 
-            SaveToExcel(errorList, fileTitle);
-        }
-
-        private void ValidateEnrichmentGlobally(IEnumerable<ValidateDataModelBase> models, List<ValidationError> errorList)
-        {
-            models = models.ToList();
-            foreach (var globalEnrichmentValidationRule in _globalEnrichmentValidationRules)
-            {
-                var enrichmentModels = models.Cast<EnrichmentExcelDataModel>();
-                var isValidRule = globalEnrichmentValidationRule.Valid(enrichmentModels, out var errors);
-                if (!isValidRule)
-                    errorList.AddRange(errors);
-            }
-        }
-
-        private void ValidateM3Globally(IEnumerable<ValidateDataModelBase> models, List<ValidationError> errorList)
-        {
-            models = models.ToList();
-            foreach (var globalM3ValidationRule in _globalM3ValidationRules)
-            {
-                var m3Models = models.Cast<M3ExcelDataModel>();
-                var isValidRule = globalM3ValidationRule.Valid(m3Models, out var errors);
-                if (!isValidRule)
-                    errorList.AddRange(errors);
-            }
-        }
-
-        private void ValidateEnrichmentRows(ValidateDataModelBase model, ICollection<ValidationError> errorList, int counter)
-        {
-            foreach (var enrichmentValidationRule in _enrichmentValidationRules)
-            {
-                var enrichmentModel = (EnrichmentExcelDataModel) model;
-                var isValidRule = enrichmentValidationRule.Valid(enrichmentModel, out var message);
-                if (!isValidRule)
-                    errorList.Add(new RowError()
-                    {
-                        RowNumber = counter,
-                        SkuCode = enrichmentModel.VariantCode,
-                        RuleName = enrichmentValidationRule.GetRuleName(),
-                        Message = message
-                    });
-            }
-        }
-
-        private void ValidateM3Rows(ValidateDataModelBase model, ICollection<ValidationError> errorList, int counter)
-        {
-            foreach (var m3ValidationRule in _m3ValidationRules)
-            {
-                var m3Model = (M3ExcelDataModel) model;
-                var isValidRule = m3ValidationRule.Valid(m3Model, out var message);
-                if (!isValidRule)
-                    errorList.Add(new RowError()
-                    {
-                        RowNumber = counter,
-                        SkuCode = m3Model.SkuNumber,
-                        RuleName = m3ValidationRule.GetRuleName(),
-                        Message = message
-                    });
-            }
-        }
-
-        static Type GetObjectTypeOrNull(object o)
-        {
-            return o == null ? null : o.GetType();
-        }
-
-        static IEnumerable<List<object>> PartitionByTypes(IEnumerable<object> values)
-        {
-            if (values == null) throw new ArgumentNullException("values");
-            if (values.Count() == 0) yield break;
-
-            var currentType = GetObjectTypeOrNull(values);
-            var buffer = new List<object>();
-            foreach (var value in values)
-            {
-                var valueType = GetObjectTypeOrNull(value);
-                if (valueType != currentType)
-                {
-                    yield return buffer;
-                    buffer = new List<object>();
-                }
-
-                currentType = valueType;
-                buffer.Add(value);
-            }
-
-            if (buffer.Count > 0)
-            {
-                yield return buffer;
-            }
-        }
-
-        private ExcelPackage CreateExcel<TValidationError>(IList<TValidationError> errorList, string workSheetTitle) where TValidationError : ValidationError
-        {
-            ExcelPackage excel = null;
-
-            try
-            {
-                PropertyInfo[] typeProps = null;
-
-                if (!errorList.Any())
-                    return null;
-
-                if (errorList.OfType<RowError>().Any())
-                    typeProps = new RowError().GetType().GetProperties();
-                else if (errorList.OfType<GlobalError>().Any())
-                    typeProps = new GlobalError().GetType().GetProperties();
-
-                if (typeProps is null)
-                    throw new InvalidCastException(
-                        $"Could not cast error list to either {typeof(RowError).Name} or {typeof(GlobalError).Name}");
-
-                excel = new ExcelPackage();
-                var ws = excel.Workbook.Worksheets.Add(workSheetTitle);
-
-                foreach (var prop in typeProps)
-                {
-                    var cell = ws.Cells[1, (ws.Dimension?.Columns ?? 0) + 1];
-                    cell.Value = prop.Name;
-                    cell.Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
-                    cell.Style.Font.Bold = true;
-                }
-
-                for (var i = 0; i < errorList.Count; i++)
-                {
-                    var row = i + 2;
-                    var props = errorList[i].GetType().GetProperties();
-                    for (var j = 0; j < props.Length; j++)
-                    {
-                        var column = j + 1;
-                        var cell = ws.Cells[row, column];
-                        cell.Value = props[j].GetValue(errorList[i]);
-                        cell.Style.Border.Bottom.Style = ExcelBorderStyle.None;
-                        cell.Style.Font.Bold = false;
-                    }
-                }
-
-                ws.Cells.AutoFitColumns(0);
-                for (var i = 1; i <= ws.Dimension?.Columns; i++)
-                    ws.Column(i).Width += 2;
-
-                excel.Save();
-                excel.Stream.Position = 0;
-            }
-            catch (Exception)
-            {
-                excel?.Dispose();
-                throw;
-            }
-
-            return excel;
-        }
-
-        private void SaveToExcel(IList<ValidationError> errorList, string title)
-        {
-            var errorListPartitions = PartitionByTypes(errorList).ToList();
-            foreach (var partitionedErrorList in errorListPartitions)
-            {
-                if(!partitionedErrorList.Any())
-                    continue;
-                var folderPath = string.Empty;
-                if (partitionedErrorList.OfType<RowError>().Any())
-                    folderPath = CreateFolderPath("row_validation_error");
-                else if (partitionedErrorList.OfType<GlobalError>().Any())
-                    folderPath = CreateFolderPath("file_validation_error");
-
-                using (var excel = CreateExcel(partitionedErrorList.Cast<ValidationError>().ToList(), title))
-                using (var fs = new FileStream(folderPath, FileMode.Create, FileAccess.Write))
-                    excel.Stream.CopyTo(fs);
-
-                Console.WriteLine($"Found {errorList.Count} validation errors");
-                Console.WriteLine($"Saved validation errors to file {folderPath}");
-            }
-        }
-
-        private static string CreateFolderPath(string fileName)
-        {
-            var pathSeparated = _filePath.Split('\\');
-            var pathRemoved = pathSeparated.Take(pathSeparated.Length - 1).ToList();
-            pathRemoved.Add($"{fileName}.xlsx");
-            var folderPath = string.Join("\\", pathRemoved.ToArray());
-            return folderPath;
+            ExcelHelper.SaveToExcel(errorList, fileTitle);
         }
 
         #endregion
 
-        #region Helper Methods
+        #region Create models methods
 
-        private static List<string> GetLinesFromExcel(string pathToFile)
-        {
-            using (var streamReader = new StreamReader(pathToFile))
-            using (var excel = new ExcelPackage(streamReader.BaseStream))
-            {
-                const int startingIndex = 1;
-                var firstWorkSheet = excel.Workbook.Worksheets.First();
-                var lastColumnCount = firstWorkSheet.Dimension.Columns + startingIndex;
-                var allLines = new List<string>();
-                for (var row = 2; row < firstWorkSheet.Dimension.Rows; row++)
-                {
-                    var sb = new StringBuilder();
-                    for (var column = startingIndex; column < lastColumnCount; column++)
-                    {
-                        var value = firstWorkSheet.GetValue(row, column);
-                        if (column != lastColumnCount)
-                            sb.Append(value).Append("|");
-                    }
-                    allLines.Add(sb.ToString());
-                }
-
-                Console.WriteLine($"{allLines.Count} lines have been identified.");
-                return allLines;
-            }
-        }
-
-        public static List<ModelBase> CreateModels(List<string> csvLines)
+        private static List<ModelBase> CreateModels(List<string> csvLines)
         {
             var models = new List<ModelBase>();
 
