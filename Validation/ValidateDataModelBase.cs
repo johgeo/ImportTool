@@ -1,6 +1,6 @@
-﻿using ProductImporterTool.Models;
+﻿using ImportAndValidationTool.Models;
 
-namespace ProductImporterTool.Validation
+namespace ImportAndValidationTool.Validation
 {
     public abstract class ValidateDataModelBase : ModelBase
     {

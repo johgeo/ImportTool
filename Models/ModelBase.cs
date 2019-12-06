@@ -1,4 +1,4 @@
-﻿namespace ProductImporterTool.Models
+﻿namespace ImportAndValidationTool.Models
 {
     public abstract class ModelBase
     {

@@ -1,4 +1,4 @@
-﻿namespace ProductImporterTool.Validation.EnrichValidation
+﻿namespace ImportAndValidationTool.Validation.EnrichValidation
 {
     public class EnrichmentExcelDataModel : ValidateDataModelBase
     {

@@ -1,10 +1,8 @@
-﻿using ProductImporterTool.Validation;
-using ProductImporterTool.Validation.EnrichValidation;
-using ProductImporterTool.Validation.M3Validation;
-using ProductImporterTool.Validation.M3Validation.Rules;
-using ProductImporterTool.Validation.EnrichValidation.Rules;
+﻿using ImportAndValidationTool.Validation;
+using ImportAndValidationTool.Validation.EnrichValidation;
+using ImportAndValidationTool.Validation.M3Validation;
 
-namespace ProductImporterTool.Registry
+namespace ImportAndValidationTool.Registry
 {
     public class RulesRegistry : StructureMap.Registry
     {
@@ -26,6 +24,14 @@ namespace ProductImporterTool.Registry
             For<IValidationRule<M3ExcelDataModel>>().Add<M3Rules.StockPolicyWrongDataOrMissing>();
 
             For<IValidationRule<EnrichmentExcelDataModel>>().Add<EnrichmentRules.CategoryCodeFormatFaulty>();
+            For<IValidationRule<EnrichmentExcelDataModel>>().Add<EnrichmentRules.SellableStatusForBedSkuCorrect>();
+            For<IValidationRule<EnrichmentExcelDataModel>>().Add<EnrichmentRules.CategoryCorrectForBedSku>();
+            For<IValidationRule<EnrichmentExcelDataModel>>().Add<EnrichmentRules.SellableAndPartOfConfiguratedBedWrongDataFormat>();
+
+            //Global rules
+            For<IGlobalValidationRule<EnrichmentExcelDataModel>>().Add<EnrichmentRules.IsSkuNumberUnique>();
+
+            For<IGlobalValidationRule<M3ExcelDataModel>>().Add<M3Rules.IsSkuNumberUnique>();
         }
     }
 }

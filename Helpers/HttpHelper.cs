@@ -4,9 +4,9 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using ProductImporterTool.Import;
+using ImportAndValidationTool.Import;
 
-namespace ProductImporterTool.Helpers
+namespace ImportAndValidationTool.Helpers
 {
     public static class HttpHelper
     {

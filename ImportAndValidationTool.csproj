@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{46894F9B-E4E1-4607-831C-D0482486F853}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>ProductImporterTool</RootNamespace>
-    <AssemblyName>ProductImporterTool</AssemblyName>
+    <RootNamespace>ImportAndValidationTool</RootNamespace>
+    <AssemblyName>ImportAndValidationTool</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -65,14 +65,24 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Application.cs" />
+    <Compile Include="Registry\DefaultRegistry.cs" />
     <Compile Include="Enums\Environment.cs" />
     <Compile Include="Enums\Mode.cs" />
     <Compile Include="Enums\Validate.cs" />
+    <Compile Include="Helpers\ExcelHelper.cs" />
     <Compile Include="Extensions\EnumerableExtensions.cs" />
     <Compile Include="Helpers\HttpHelper.cs" />
+    <Compile Include="Import\ImportService\IImportService.cs" />
+    <Compile Include="Registry\ImportRegistry.cs" />
+    <Compile Include="Import\ImportService\ImportService.cs" />
     <Compile Include="ModelMapper\Mapper.cs" />
+    <Compile Include="Validation\GlobalError.cs" />
+    <Compile Include="Validation\RowError.cs" />
     <Compile Include="Validation\EnrichValidation\EnrichmentExcelDataModel.cs" />
-    <Compile Include="Validation\EnrichValidation\Rules\EnrichmentRules.cs" />
+    <Compile Include="Validation\EnrichValidation\EnrichmentRules.cs" />
+    <Compile Include="Validation\GlobalValidationRuleBase.cs" />
+    <Compile Include="Validation\IGlobalValidationRule.cs" />
+    <Compile Include="Validation\IRule.cs" />
     <Compile Include="Validation\M3Validation\M3ExcelDataModel.cs" />
     <Compile Include="Models\ModelBase.cs" />
     <Compile Include="Import\CatalogContentExternalImportModel.cs" />
@@ -80,12 +90,15 @@
     <Compile Include="Import\StockModel.cs" />
     <Compile Include="Import\SkuPrice.cs" />
     <Compile Include="Import\StockQuantity.cs" />
-    <Compile Include="Validation\M3Validation\Rules\M3Rules.cs" />
+    <Compile Include="Validation\M3Validation\M3Rules.cs" />
     <Compile Include="Validation\ValidateDataModelBase.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Registry\RulesRegistry.cs" />
     <Compile Include="Validation\IValidationRule.cs" />
+    <Compile Include="Validation\ValidationService\IValidationService.cs" />
+    <Compile Include="Validation\ValidationService\ValidationRegistry.cs" />
+    <Compile Include="Validation\ValidationService\ValidationService.cs" />
     <Compile Include="Validation\ValidationError.cs" />
     <Compile Include="Validation\ValidationRuleBase.cs" />
   </ItemGroup>

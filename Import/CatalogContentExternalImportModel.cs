@@ -1,6 +1,6 @@
-﻿using ProductImporterTool.Models;
+﻿using ImportAndValidationTool.Models;
 
-namespace ProductImporterTool.Import
+namespace ImportAndValidationTool.Import
 {
     public class CatalogContentExternalImportModel : ModelBase
     {
@@ -21,5 +21,6 @@ namespace ProductImporterTool.Import
         public string UnitOfMeasure { get; set; }
         public string EANcode { get; set; }
         public string EcommercePlatform { get; set; }
+        public string StockPolicy { get; set; }
     }
 }

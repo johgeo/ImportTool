@@ -1,6 +1,6 @@
-﻿using ProductImporterTool.Models;
+﻿using ImportAndValidationTool.Models;
 
-namespace ProductImporterTool.Import
+namespace ImportAndValidationTool.Import
 {
     public class PriceModel : ModelBase
     {

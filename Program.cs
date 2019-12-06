@@ -1,17 +1,26 @@
 ﻿using System;
-using ProductImporterTool.Registry;
+using ImportAndValidationTool.Registry;
 using StructureMap;
 
-namespace ProductImporterTool
+namespace ImportAndValidationTool
 {
     public class Program
     {
         public static void Main(string[] args)
         {
-            var container = Container.For<RulesRegistry>();
-            var app = container.GetInstance<Application>();
+            var app = ConfigureContainer().GetInstance<Application>();
             app.Run();
             Console.ReadLine();
+        }
+
+        private static Container ConfigureContainer()
+        {
+            var registry = new StructureMap.Registry();
+            registry.IncludeRegistry<RulesRegistry>();
+            registry.IncludeRegistry<ImportRegistry>();
+            registry.IncludeRegistry<DefaultRegistry>();
+            var container = new Container(registry);
+            return container;
         }
     }
 }

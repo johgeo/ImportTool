@@ -1,4 +1,4 @@
-﻿namespace ProductImporterTool.Enums
+﻿namespace ImportAndValidationTool.Enums
 {
     public enum Validate
     {

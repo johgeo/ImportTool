@@ -1,8 +1,8 @@
-﻿namespace ProductImporterTool.Validation
+﻿namespace ImportAndValidationTool.Validation
 {
     public abstract class ValidationRuleBase<TValidationModel> : IValidationRule<TValidationModel> where TValidationModel : ValidateDataModelBase
     {
-        public abstract bool Validate(TValidationModel model, out string message);
+        public abstract bool Valid(TValidationModel model, out string message);
 
         public string GetRuleName()
         {
