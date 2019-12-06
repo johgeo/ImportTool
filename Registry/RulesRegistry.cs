@@ -26,6 +26,7 @@ namespace ImportAndValidationTool.Registry
             For<IValidationRule<EnrichmentExcelDataModel>>().Add<EnrichmentRules.CategoryCodeFormatFaulty>();
             For<IValidationRule<EnrichmentExcelDataModel>>().Add<EnrichmentRules.SellableStatusForBedSkuCorrect>();
             For<IValidationRule<EnrichmentExcelDataModel>>().Add<EnrichmentRules.CategoryCorrectForBedSku>();
+            For<IValidationRule<EnrichmentExcelDataModel>>().Add<EnrichmentRules.SellableAndPartOfConfiguratedBedWrongDataFormat>();
 
             //Global rules
             For<IGlobalValidationRule<EnrichmentExcelDataModel>>().Add<EnrichmentRules.IsSkuNumberUnique>();

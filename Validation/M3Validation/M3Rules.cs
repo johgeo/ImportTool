@@ -95,7 +95,7 @@ namespace ImportAndValidationTool.Validation.M3Validation
                     return true;
                 if (model.StockPolicy.ToLower().Equals("yes"))
                     return true;
-                else return true;
+                else return false;
             }
         }
 

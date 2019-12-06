@@ -47,6 +47,21 @@ namespace ImportAndValidationTool.Validation.EnrichValidation
             }
         }
 
+        public class SellableAndPartOfConfiguratedBedWrongDataFormat: ValidationRuleBase<EnrichmentExcelDataModel>
+        {
+            public override bool Valid(EnrichmentExcelDataModel model, out string message)
+            {
+                message = "Sellable and part of configurated bed has been left empty or has wrong format, correct format is yes or no";
+                if (string.IsNullOrWhiteSpace(model.SellableAndPartOfConfiguratedBed))
+                    return false;
+                if (model.SellableAndPartOfConfiguratedBed.ToLower().Equals("no"))
+                    return true;
+                if (model.SellableAndPartOfConfiguratedBed.ToLower().Equals("yes"))
+                    return true;
+                else return false;
+            }
+        }
+
         //Globals
         public class IsSkuNumberUnique : GlobalValidationRuleBase<EnrichmentExcelDataModel>
         {
