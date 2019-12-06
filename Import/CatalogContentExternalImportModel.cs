@@ -21,5 +21,6 @@ namespace ImportAndValidationTool.Import
         public string UnitOfMeasure { get; set; }
         public string EANcode { get; set; }
         public string EcommercePlatform { get; set; }
+        public string StockPolicy { get; set; }
     }
 }

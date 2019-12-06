@@ -17,15 +17,22 @@ namespace ImportAndValidationTool.ModelMapper
                     return new CatalogContentExternalImportModel
                     {
                         Code = splitLine[0],
-                        Name = splitLine[2],
-                        ProductPart = splitLine[11],
-                        Firmness = splitLine[3],
+                        EANcode = splitLine[1],
+                        Firmness = splitLine[2],
+                        UnitOfMeasure = splitLine[3],
+                        NetWeight = splitLine[4],
+                        GrossWeight = splitLine[5],
+                        Volume = splitLine[6],
+                        Measurement2 = splitLine[7],
+                        Measurement1 = splitLine[8],
+                        Measurement3 = splitLine[9],
                         ColorCode = splitLine[10],
-                        ColorName = splitLine[9],
-                        Measurement1 = splitLine[5],
-                        Measurement2 = splitLine[6],
-                        Measurement3 = splitLine[7],
-                        Model = splitLine[12]
+                        ColorName = splitLine[11],
+                        ProductPart = splitLine[12],
+                        EcommercePlatform = splitLine[13],
+                        StockPolicy = splitLine[14],
+                        Model = splitLine[15],
+                        Name = splitLine[0]
                     };
                 if (typeof(T) == typeof(PriceModel))
                     return new PriceModel
