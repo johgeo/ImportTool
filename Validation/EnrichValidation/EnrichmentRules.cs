@@ -62,6 +62,15 @@ namespace ImportAndValidationTool.Validation.EnrichValidation
             }
         }
 
+        public class SizeIsMissing : ValidationRuleBase<EnrichmentExcelDataModel>
+        {
+            public override bool Valid(EnrichmentExcelDataModel model, out string message)
+            {
+                message = "Size is a critical field and cannot be empty";
+                return !string.IsNullOrWhiteSpace(model.Size);
+            }
+        }
+
         //Globals
         public class IsSkuNumberUnique : GlobalValidationRuleBase<EnrichmentExcelDataModel>
         {
